@@ -96,13 +96,6 @@ fn hash_to_binary_representation(hash: &[u8]) -> String {
     res
 }
 
-fn validate_hash(value: serde_json::Value, hash: Vec<u8>) -> bool {
-    let mut hasher = Sha256::new();
-    hasher.update(value.to_string().as_bytes());
-    let value_hash = hasher.finalize().as_slice().to_owned();
-    return value_hash == hash;
-}
-
 impl App {
     fn new() -> Self {
         Self { blocks: vec![] }
