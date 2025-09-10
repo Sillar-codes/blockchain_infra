@@ -1,19 +1,19 @@
 use chrono::prelude::*;
 use libp2p::{
+    Transport,
     core::upgrade,
     futures::StreamExt,
     mplex,
     noise::{Keypair, NoiseConfig, X25519Spec},
     swarm::{Swarm, SwarmBuilder},
     tcp::TokioTcpConfig,
-    Transport,
 };
 use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::time::Duration;
 use tokio::{
-    io::{stdin, AsyncBufReadExt, BufReader},
+    io::{AsyncBufReadExt, BufReader, stdin},
     select, spawn,
     sync::mpsc,
     time::sleep,
@@ -50,6 +50,13 @@ impl Block {
             nonce,
         }
     }
+}
+
+fn validate_hash(value: serde_json::Value, hash: Vec<u8>) -> bool {
+    let mut hasher = Sha256::new();
+    hasher.update(value.to_string().as_bytes());
+    let value_hash = hasher.finalize().as_slice().to_owned();
+    return value_hash == hash;
 }
 
 fn calculate_hash(id: u64, timestamp: i64, previous_hash: &str, data: &str, nonce: u64) -> Vec<u8> {
@@ -233,13 +240,13 @@ async fn main() {
     loop {
         let evt = {
             select! {
+                _init = init_rcv.recv() => {
+                    Some(p2p::EventType::Init)
+                },
                 line = stdin.next_line() => Some(p2p::EventType::Input(line.expect("can get line").expect("can read line from stdin"))),
                 response = response_rcv.recv() => {
                     Some(p2p::EventType::LocalChainResponse(response.expect("response exists")))
                 },
-                _init = init_rcv.recv() => {
-                    Some(p2p::EventType::Init)
-                }
                 event = swarm.select_next_some() => {
                     info!("Unhandled Swarm Event: {:?}", event);
                     None
