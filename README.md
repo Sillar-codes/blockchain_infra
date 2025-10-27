@@ -28,15 +28,6 @@ This starts a local blockchain client. <br>
 
 You can open <b>multiple terminals</b> to run several connected P2P clients.
 
----
-
-## 💻 Commands
-
-| Command                     | Description                                               |
-| --------------------------- | --------------------------------------------------------- |
-| <code>ls p</code>           | 👥 List connected peers                                   |
-| <code>ls c</code>           | 📜 Print the local blockchain                             |
-| <code>create b $data</code> | ⛏️ Mine a new block with <code>$data</code> and broadcast |
 
 ---
 
